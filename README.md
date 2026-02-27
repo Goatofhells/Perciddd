@@ -27,14 +27,6 @@ Returns a `gui` object.
 
 ---
 
-## GUI: Toggle Button
-
-A floating image button that shows or hides the main window. It auto-hides on **PC** when the last input was keyboard/mouse, and auto-shows on **Mobile** when the last input was touch. It cannot be manually toggled — it reacts to device input automatically.
-
-The button uses image `rbxassetid://88847856024476`, has no background, no stroke, and is draggable.
-
----
-
 ## GUI: Adding Tabs
 
 ```lua
@@ -120,6 +112,25 @@ local slider = tab:AddSlider(label, min, max, default, callback)
 ```lua
 slider:Set(50)
 slider:Get() -- returns number
+```
+
+---
+
+### Keybind
+
+```lua
+local keybind = tab:AddKeybind(label, default, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Text shown on the row |
+| default | KeyCode | Starting keybind |
+| callback | function(key: KeyCode) | Called when key is changed |
+
+```lua
+keybind:Set(Enum.KeyCode.F)
+keybind:Get() -- returns KeyCode
 ```
 
 ---
