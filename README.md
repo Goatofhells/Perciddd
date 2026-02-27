@@ -1,0 +1,180 @@
+# Perided UI Library
+
+A dark, minimal Roblox UI library built for executors.
+
+## Requirements
+
+Requires an executor with `gethui()` and `syn.protect_gui()` support (e.g. Synapse X, KRNL, Fluxus).
+
+## Loading
+
+```lua
+local Perided = loadstring(game:HttpGet("YOUR_RAW_URL_HERE"))()
+```
+
+## Creating a GUI
+
+```lua
+local gui = Perided("Title", "1.0")
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| title | string | Shown in the top bar |
+| version | string | Shown below the title |
+
+Returns a `gui` object.
+
+---
+
+## GUI: Toggle Button
+
+A floating image button that shows or hides the main window. It auto-hides on **PC** when the last input was keyboard/mouse, and auto-shows on **Mobile** when the last input was touch. It cannot be manually toggled — it reacts to device input automatically.
+
+The button uses image `rbxassetid://88847856024476`, has no background, no stroke, and is draggable.
+
+---
+
+## GUI: Adding Tabs
+
+```lua
+local tab = gui:AddTab(name, icon)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| name | string | Tab label shown in the sidebar |
+| icon | number | Asset ID for the tab icon (optional) |
+
+Returns a `tab` object.
+
+---
+
+## Tab Elements
+
+### Toggle
+
+```lua
+local toggle = tab:AddToggle(label, default, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Text shown on the row |
+| default | boolean | Starting state |
+| callback | function(state: boolean) | Called when toggled |
+
+```lua
+toggle:Set(true)
+toggle:Get() -- returns boolean
+```
+
+---
+
+### Input
+
+```lua
+local input = tab:AddInput(label, placeholder, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Text shown on the row |
+| placeholder | string | Greyed-out hint text |
+| callback | function(text: string, enterPressed: boolean) | Called on focus lost |
+
+```lua
+input:Set("hello")
+input:Get() -- returns string
+```
+
+---
+
+### Button
+
+```lua
+local btn = tab:AddButton(label, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Button text |
+| callback | function() | Called on click |
+
+---
+
+### Slider
+
+```lua
+local slider = tab:AddSlider(label, min, max, default, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Text shown on the row |
+| min | number | Minimum value |
+| max | number | Maximum value |
+| default | number | Starting value |
+| callback | function(value: number) | Called on change |
+
+```lua
+slider:Set(50)
+slider:Get() -- returns number
+```
+
+---
+
+### Dropdown
+
+```lua
+local dropdown = tab:AddDropdown(label, options, default, callback)
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| label | string | Text shown on the row |
+| options | table | Array of string options |
+| default | string | Default selected option |
+| callback | function(selected: string) | Called on selection |
+
+```lua
+dropdown:Set("Option A")
+dropdown:Get() -- returns string
+```
+
+---
+
+## Settings Tab
+
+A built-in **Settings** tab is added automatically. It uses icon `rbxassetid://7059346373`. You do not need to create it manually.
+
+---
+
+## Example
+
+```lua
+local Perided = loadstring(game:HttpGet("YOUR_RAW_URL_HERE"))()
+local gui = Perided("MyScript", "2.0")
+
+local main = gui:AddTab("Main", 123456789)
+
+local esp = main:AddToggle("ESP", false, function(state)
+    print("ESP:", state)
+end)
+
+local name = main:AddInput("Name", "Enter name...", function(text, enter)
+    print("Name:", text)
+end)
+
+main:AddButton("Teleport", function()
+    print("Teleport pressed")
+end)
+
+local speed = main:AddSlider("Speed", 0, 100, 16, function(val)
+    print("Speed:", val)
+end)
+
+local mode = main:AddDropdown("Mode", {"Silent", "Loud", "Spinbot"}, "Silent", function(sel)
+    print("Mode:", sel)
+end)
+```
