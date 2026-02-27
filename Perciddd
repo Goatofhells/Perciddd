@@ -1,0 +1,389 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local COLORS = {
+	bg      = Color3.fromRGB(25, 25, 25),
+	sidebar = Color3.fromRGB(14, 14, 14),
+	section = Color3.fromRGB(23, 23, 23),
+	toggle  = Color3.fromRGB(43, 43, 43),
+	stroke  = Color3.fromRGB(48, 48, 48),
+	text    = Color3.fromRGB(255, 255, 255),
+	shadow  = Color3.fromRGB(59, 59, 59),
+}
+
+local function new(class, parent, props)
+	local i = Instance.new(class)
+	for k, v in pairs(props or {}) do i[k] = v end
+	i.Parent = parent
+	return i
+end
+
+local function corner(parent, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = radius or UDim.new(0, 6)
+	c.Parent = parent
+end
+
+local function gradient(parent, rot, seq)
+	local g = Instance.new("UIGradient")
+	g.Rotation = rot
+	g.Color = seq
+	g.Parent = parent
+	return g
+end
+
+local function createGui(title, version)
+	local gui = {}
+	local activeTab = nil
+
+	local screen = new("ScreenGui", Players.LocalPlayer:WaitForChild("PlayerGui"), {
+		IgnoreGuiInset = true,
+		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
+		Name = "Perided",
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	})
+
+	local main = new("Frame", screen, {
+		Active = true,
+		BorderSizePixel = 0,
+		BackgroundColor3 = COLORS.bg,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Size = UDim2.new(0.78, 0, 0.78, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Name = "MainFrameContainer",
+	})
+	corner(main)
+	new("UIAspectRatioConstraint", main, { AspectRatio = 1.69421 })
+	gradient(main, -90, ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+		ColorSequenceKeypoint.new(0.505, Color3.fromRGB(79, 79, 79)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(79, 79, 79)),
+	})
+
+	local shadowFolder = new("Folder", main, { Name = "Shadows" })
+	local shadow = new("Frame", shadowFolder, {
+		ZIndex = -2,
+		BorderSizePixel = 0,
+		BackgroundColor3 = COLORS.shadow,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		ClipsDescendants = true,
+		Size = UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
+		Name = "Shadow1",
+		BackgroundTransparency = 0.7,
+	})
+	new("UIStroke", shadow, { Thickness = 2.4, Color = Color3.fromRGB(120, 120, 120) })
+
+	new("UIDragDetector", main, {
+		DragStyle = Enum.UIDragDetectorDragStyle.TranslatePlane,
+	})
+
+	local topBar = new("Frame", main, {
+		BorderSizePixel = 0,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		Size = UDim2.new(0.30976, 0, 0.1405, 0),
+		Name = "TopBar",
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+	})
+
+	new("ImageLabel", topBar, {
+		BorderSizePixel = 0,
+		BackgroundTransparency = 1,
+		Image = "rbxassetid://1249690857",
+		Size = UDim2.new(1, 0, 1, 0),
+		ZIndex = 0,
+		Name = "BubbleTexture",
+		ImageTransparency = 0.4,
+		ScaleType = Enum.ScaleType.Tile,
+		TileSize = UDim2.new(0, 64, 0, 64),
+	})
+
+	local tagLabel = new("TextLabel", topBar, {
+		TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
+		TextColor3 = COLORS.text,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(0.20472, 0, 0.61765, 0),
+		Text = "Beta", Name = "Tag",
+		Position = UDim2.new(0.75591, 0, 0.4944, 0),
+		ZIndex = 2,
+	})
+	gradient(tagLabel, 90, ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 232, 6)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(162, 130, 7)),
+	})
+
+	local versionLabel = new("TextLabel", topBar, {
+		TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
+		TextColor3 = COLORS.text,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0.47619, 0),
+		Text = "Version: " .. (version or "?"), Name = "Version",
+		Position = UDim2.new(0, 0, 0.52381, 0),
+		ZIndex = 2,
+	})
+	gradient(versionLabel, 90, ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 32)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 214, 208)),
+	})
+
+	local titleLabel = new("TextLabel", topBar, {
+		TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
+		TextColor3 = COLORS.text,
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0.47619, 0),
+		Text = title or "Perided", Name = "Title",
+		ZIndex = 2,
+	})
+	gradient(titleLabel, 90, ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 248)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(132, 57, 255)),
+	})
+
+	new("Frame", main, {
+		BorderSizePixel = 0,
+		BackgroundColor3 = Color3.fromRGB(58, 58, 58),
+		Size = UDim2.new(0.96341, 0, 0.00413, 0),
+		Position = UDim2.new(0.01951, 0, 0.15289, 0),
+		Name = "Line",
+	})
+
+	local sidebar = new("Frame", main, {
+		BorderSizePixel = 0,
+		BackgroundColor3 = COLORS.sidebar,
+		ClipsDescendants = true,
+		Size = UDim2.new(0.20976, 0, 0.78926, 0),
+		Position = UDim2.new(0.02195, 0, 0.19421, 0),
+		Name = "SideBar",
+	})
+	corner(sidebar)
+	new("UIStroke", sidebar, { Thickness = 2.5, Color = COLORS.stroke })
+
+	local sideScroll = new("ScrollingFrame", sidebar, {
+		ScrollingDirection = Enum.ScrollingDirection.Y,
+		BorderSizePixel = 0,
+		ElasticBehavior = Enum.ElasticBehavior.Always,
+		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+		Name = "SideBarAltFram",
+		ScrollBarImageTransparency = 1,
+		ClipsDescendants = false,
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+	})
+	new("UIListLayout", sideScroll, { Padding = UDim.new(0, 3) })
+
+	local sectionArea = new("Frame", main, {
+		BackgroundColor3 = Color3.fromRGB(23, 23, 23),
+		Size = UDim2.new(0.71707, 0, 0.77273, 0),
+		Position = UDim2.new(0.25854, 0, 0.19008, 0),
+		Name = "SectionMain",
+		BackgroundTransparency = 0.3,
+		BorderSizePixel = 0,
+	})
+	corner(sectionArea)
+	new("UIStroke", sectionArea, { Thickness = 2.4, Color = Color3.fromRGB(120, 120, 120) })
+	gradient(sectionArea, -90, ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+		ColorSequenceKeypoint.new(0.505, Color3.fromRGB(79, 79, 79)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(79, 79, 79)),
+	})
+
+	function gui:AddTab(name, icon)
+		local btn = new("TextButton", sideScroll, {
+			TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+			TextColor3 = COLORS.text,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			Size = UDim2.new(0, 172, 0, 36),
+			Text = name,
+			Name = name,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
+		})
+		corner(btn)
+		new("UIPadding", btn, {
+			PaddingLeft = icon and UDim.new(0, 32) or UDim.new(0, 8),
+		})
+		gradient(btn, 90, ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(0.177, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(0.879, Color3.fromRGB(65, 65, 65)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 65, 65)),
+		})
+
+		if icon then
+			new("ImageLabel", btn, {
+				BorderSizePixel = 0,
+				BackgroundTransparency = 1,
+				Image = "rbxassetid://" .. tostring(icon),
+				AnchorPoint = Vector2.new(0, 0.5),
+				Position = UDim2.new(0, -26, 0.5, 0),
+				Size = UDim2.new(0.23256, 0, 1, 0),
+				Name = "Icon",
+				ZIndex = 2,
+			})
+		end
+
+		local section = new("ScrollingFrame", sectionArea, {
+			ScrollingDirection = Enum.ScrollingDirection.Y,
+			BorderSizePixel = 0,
+			ElasticBehavior = Enum.ElasticBehavior.Always,
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			Name = name .. "Section",
+			ScrollBarImageTransparency = 1,
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			ClipsDescendants = false,
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			Visible = false,
+		})
+		corner(section)
+		new("UIListLayout", section, { Padding = UDim.new(0, 3) })
+		new("UIPadding", section, {
+			PaddingTop = UDim.new(0, 6),
+			PaddingLeft = UDim.new(0, 6),
+			PaddingRight = UDim.new(0, 6),
+		})
+
+		if not activeTab then
+			activeTab = { btn = btn, section = section }
+			section.Visible = true
+			btn.BackgroundTransparency = 0.85
+		end
+
+		btn.MouseButton1Click:Connect(function()
+			if activeTab then
+				activeTab.section.Visible = false
+				activeTab.btn.BackgroundTransparency = 1
+			end
+			activeTab = { btn = btn, section = section }
+			section.Visible = true
+			btn.BackgroundTransparency = 0.85
+		end)
+
+		local tab = {}
+
+		function tab:AddToggle(label, default, callback)
+			local state = default or false
+
+			local row = new("Frame", section, {
+				BorderSizePixel = 0,
+				BackgroundColor3 = COLORS.toggle,
+				Size = UDim2.new(1, 0, 0, 48),
+				Name = label,
+				BackgroundTransparency = 0.3,
+			})
+			corner(row)
+
+			new("TextLabel", row, {
+				TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
+				TextColor3 = COLORS.text,
+				BackgroundTransparency = 1,
+				Size = UDim2.new(0.25763, 0, 1.04167, 0),
+				Position = UDim2.new(0.03051, 0, -0.04167, 0),
+				Text = label,
+				Name = "TitleText",
+				ZIndex = 2,
+			})
+
+			local outer = new("Frame", row, {
+				BorderSizePixel = 0,
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				Size = UDim2.new(0, 36, 0, 36),
+				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(0.97, 0, 0.5, 0),
+				Name = "ToggleOuter",
+				ZIndex = 2,
+			})
+			corner(outer)
+
+			local outerGradient = new("UIGradient", outer, {
+				Offset = Vector2.new(0, 30),
+				Color = ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30)),
+				},
+			})
+
+			local outerStroke = new("UIStroke", outer, {
+				Thickness = 2.4,
+				Color = Color3.fromRGB(80, 80, 80),
+			})
+
+			local toggleBtn = new("TextButton", outer, {
+				TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
+				TextColor3 = COLORS.text,
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 1, 0),
+				Position = UDim2.new(0, 0, 0, 0),
+				Text = "",
+				Name = "ToggleButton",
+				ZIndex = 10,
+				Active = true,
+			})
+
+			local icon = new("ImageLabel", toggleBtn, {
+				BorderSizePixel = 0,
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+				BackgroundTransparency = 1,
+				Image = "rbxassetid://9754130783",
+				Size = UDim2.new(0.90909, 0, 0.97561, 0),
+				Name = "Icon",
+				ZIndex = 11,
+				ImageTransparency = state and 0 or 1,
+			})
+
+			local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+			local function refresh()
+				if state then
+					TweenService:Create(icon, tweenInfo, { ImageTransparency = 0 }):Play()
+					TweenService:Create(outerStroke, tweenInfo, { Color = Color3.fromRGB(255, 120, 19) }):Play()
+					outerGradient.Color = ColorSequence.new{
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 138, 42)),
+						ColorSequenceKeypoint.new(0.788, Color3.fromRGB(255, 0, 0)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+					}
+				else
+					TweenService:Create(icon, tweenInfo, { ImageTransparency = 1 }):Play()
+					TweenService:Create(outerStroke, tweenInfo, { Color = Color3.fromRGB(80, 80, 80) }):Play()
+					outerGradient.Color = ColorSequence.new{
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30)),
+					}
+				end
+				if callback then callback(state) end
+			end
+
+			if state then refresh() end
+
+			toggleBtn.MouseButton1Click:Connect(function()
+				state = not state
+				refresh()
+			end)
+
+			return {
+				Set = function(v) state = v refresh() end,
+				Get = function() return state end,
+			}
+		end
+
+		return tab
+	end
+
+	return gui
+end
+
+return createGui
