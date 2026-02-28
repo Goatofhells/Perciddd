@@ -38,9 +38,6 @@ local function createGui(title, version)
 			break
 		end
 	end
-	local gui = {}
-	local activeTab = nil
-	local lastInputType = nil
 
 	local symbols = {"ð","ø","þ","æ","ł","ħ","ŋ","ĸ","ŧ","œ","ƒ","ɑ","ɛ","ɔ","ə","ʃ","ʒ","ʊ","ʌ","ɪ"}
 	local function randName()
@@ -69,6 +66,7 @@ local function createGui(title, version)
 		Size = UDim2.new(0.78, 0, 0.78, 0),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		Name = "MainFrameContainer",
+		Visible = true,
 	})
 	corner(main)
 	new("UIAspectRatioConstraint", main, { AspectRatio = 1.69421 })
@@ -231,7 +229,6 @@ local function createGui(title, version)
 		Active = true,
 		Visible = false,
 	})
-
 	new("UIDragDetector", floatBtn, {
 		DragStyle = Enum.UIDragDetectorDragStyle.TranslatePlane,
 		CursorIcon = "rbxassetid://2300836754",
@@ -246,7 +243,6 @@ local function createGui(title, version)
 			dragStart = input.Position
 		end
 	end)
-
 	floatBtn.InputChanged:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
 			if dragStart and (input.Position - dragStart).Magnitude > 6 then
@@ -254,7 +250,6 @@ local function createGui(title, version)
 			end
 		end
 	end)
-
 	floatBtn.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
 			if not dragged then
@@ -264,30 +259,25 @@ local function createGui(title, version)
 		end
 	end)
 
-	local function applyInputMode(inputType)
+	UIS.LastInputTypeChanged:Connect(function(inputType)
 		local isTouch = inputType == Enum.UserInputType.Touch
 		floatBtn.Visible = isTouch
-		main.Visible = not isTouch
-	end
-
-	local lastType = UIS:GetLastInputType()
-	applyInputMode(lastType)
-
-	UIS.LastInputTypeChanged:Connect(function(inputType)
-		lastInputType = inputType
-		applyInputMode(inputType)
+		if isTouch then
+			main.Visible = false
+		end
 	end)
 
 	local currentKeybind = Enum.KeyCode.RightShift
 
 	UIS.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
-		if input.UserInputType == Enum.UserInputType.Keyboard then
-			if input.KeyCode == currentKeybind then
-				main.Visible = not main.Visible
-			end
+		if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == currentKeybind then
+			main.Visible = not main.Visible
 		end
 	end)
+
+	local activeTab = nil
+	local gui = {}
 
 	local function buildTab(name, icon)
 		local btn = new("TextButton", sideScroll, {
@@ -303,23 +293,33 @@ local function createGui(title, version)
 			FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
 		})
 		corner(btn)
-		new("UIPadding", btn, { PaddingLeft = UDim.new(0, 28) })
+
+		local iconHolder = new("Frame", btn, {
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 4, 0.5, 0),
+			Size = UDim2.new(0, 24, 0, 24),
+			Name = "IconHolder",
+			ZIndex = 2,
+		})
+		new("ImageLabel", iconHolder, {
+			BorderSizePixel = 0,
+			BackgroundTransparency = 1,
+			Image = icon and ("rbxassetid://" .. tostring(icon)) or "rbxasset://textures/ui/GuiImagePlaceholder.png",
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			Size = UDim2.new(1, 0, 1, 0),
+			Name = "Icon",
+			ZIndex = 2,
+			ScaleType = Enum.ScaleType.Fit,
+		})
+		new("UIPadding", btn, { PaddingLeft = UDim.new(0, 34) })
 		gradient(btn, 90, ColorSequence.new{
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
 			ColorSequenceKeypoint.new(0.177, Color3.fromRGB(255, 255, 255)),
 			ColorSequenceKeypoint.new(0.879, Color3.fromRGB(65, 65, 65)),
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 65, 65)),
-		})
-
-		new("ImageLabel", btn, {
-			BorderSizePixel = 0,
-			BackgroundTransparency = 1,
-			Image = icon and ("rbxassetid://" .. tostring(icon)) or "rbxasset://textures/ui/GuiImagePlaceholder.png",
-			AnchorPoint = Vector2.new(0, 0.5),
-			Position = UDim2.new(0, 4, 0.5, 0),
-			Size = UDim2.new(0, 20, 0, 20),
-			Name = "Icon",
-			ZIndex = 2,
 		})
 
 		local section = new("ScrollingFrame", sectionArea, {
@@ -416,7 +416,6 @@ local function createGui(title, version)
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 1,
 				Size = UDim2.new(1, 0, 1, 0),
-				Position = UDim2.new(0, 0, 0, 0),
 				Text = "",
 				Name = "ToggleButton",
 				ZIndex = 10,
@@ -457,11 +456,7 @@ local function createGui(title, version)
 			end
 
 			if state then refresh() end
-
-			tBtn.MouseButton1Click:Connect(function()
-				state = not state
-				refresh()
-			end)
+			tBtn.MouseButton1Click:Connect(function() state = not state refresh() end)
 
 			return {
 				Set = function(v) state = v refresh() end,
@@ -553,7 +548,6 @@ local function createGui(title, version)
 			})
 
 			local ti = TweenInfo.new(0.15, Enum.EasingStyle.Quad)
-
 			b.MouseButton1Click:Connect(function()
 				TweenService:Create(b, ti, { TextTransparency = 0.5 }):Play()
 				task.delay(0.15, function()
@@ -663,24 +657,19 @@ local function createGui(title, version)
 			})
 
 			clickBtn.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1
-					or input.UserInputType == Enum.UserInputType.Touch then
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					dragging = true
 					updateSlider(input.Position.X)
 				end
 			end)
-
 			UIS.InputChanged:Connect(function(input)
 				if not dragging then return end
-				if input.UserInputType == Enum.UserInputType.MouseMovement
-					or input.UserInputType == Enum.UserInputType.Touch then
+				if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 					updateSlider(input.Position.X)
 				end
 			end)
-
 			UIS.InputEnded:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1
-					or input.UserInputType == Enum.UserInputType.Touch then
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					dragging = false
 				end
 			end)
@@ -770,7 +759,6 @@ local function createGui(title, version)
 					ZIndex = 21,
 					Active = true,
 				})
-
 				optBtn.MouseButton1Click:Connect(function()
 					selected = opt
 					dBtn.Text = selected
@@ -778,7 +766,6 @@ local function createGui(title, version)
 					list.Visible = false
 					if callback then callback(selected) end
 				end)
-
 				optBtn.MouseEnter:Connect(function()
 					TweenService:Create(optBtn, ti, { BackgroundColor3 = Color3.fromRGB(35, 35, 35) }):Play()
 				end)
@@ -802,37 +789,7 @@ local function createGui(title, version)
 			}
 		end
 
-		function tab:AddToggle(...)
-			local ok, r = pcall(_AddToggle, self, ...)
-			if not ok then warn("Perided | AddToggle: " .. tostring(r)) end
-			return r
-		end
-
-		function tab:AddInput(...)
-			local ok, r = pcall(_AddInput, self, ...)
-			if not ok then warn("Perided | AddInput: " .. tostring(r)) end
-			return r
-		end
-
-		function tab:AddButton(...)
-			local ok, r = pcall(_AddButton, self, ...)
-			if not ok then warn("Perided | AddButton: " .. tostring(r)) end
-			return r
-		end
-
-		function tab:AddSlider(...)
-			local ok, r = pcall(_AddSlider, self, ...)
-			if not ok then warn("Perided | AddSlider: " .. tostring(r)) end
-			return r
-		end
-
-		function tab:AddDropdown(...)
-			local ok, r = pcall(_AddDropdown, self, ...)
-			if not ok then warn("Perided | AddDropdown: " .. tostring(r)) end
-			return r
-		end
-
-		function tab:AddKeybind(label, default, callback)
+		local function _AddKeybind(_, label, default, callback)
 			local state = default or Enum.KeyCode.RightShift
 
 			local row = new("Frame", section, {
@@ -874,33 +831,72 @@ local function createGui(title, version)
 			corner(keyBox, UDim.new(0, 4))
 			local kStroke = new("UIStroke", keyBox, { Thickness = 1.5, Color = Color3.fromRGB(80, 80, 80) })
 			local listening = false
+			local timeoutThread = nil
 			local ti = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
+			local function stopListening()
+				listening = false
+				keyBox.Text = state.Name
+				TweenService:Create(kStroke, ti, { Color = Color3.fromRGB(80, 80, 80) }):Play()
+				if timeoutThread then task.cancel(timeoutThread) timeoutThread = nil end
+			end
+
 			keyBox.MouseButton1Click:Connect(function()
-				if listening then return end
+				if listening then stopListening() return end
 				listening = true
 				keyBox.Text = "..."
 				TweenService:Create(kStroke, ti, { Color = Color3.fromRGB(255, 120, 19) }):Play()
+				timeoutThread = task.delay(7, stopListening)
 			end)
 
 			UIS.InputBegan:Connect(function(input, gpe)
-				if gpe or input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-				if listening then
-					state = input.KeyCode
-					listening = false
-					keyBox.Text = state.Name
-					TweenService:Create(kStroke, ti, { Color = Color3.fromRGB(80, 80, 80) }):Play()
-					if callback then callback(state) end
-				end
+				if gpe or not listening then return end
+				if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
+				state = input.KeyCode
+				currentKeybind = state
+				if callback then callback(state) end
+				stopListening()
 			end)
 
 			return {
 				Get = function() return state end,
 				Set = function(v)
 					state = v
+					currentKeybind = v
 					keyBox.Text = v.Name
 				end,
 			}
+		end
+
+		function tab:AddToggle(...)
+			local ok, r = pcall(_AddToggle, self, ...)
+			if not ok then warn("Perided | AddToggle: " .. tostring(r)) end
+			return r
+		end
+		function tab:AddInput(...)
+			local ok, r = pcall(_AddInput, self, ...)
+			if not ok then warn("Perided | AddInput: " .. tostring(r)) end
+			return r
+		end
+		function tab:AddButton(...)
+			local ok, r = pcall(_AddButton, self, ...)
+			if not ok then warn("Perided | AddButton: " .. tostring(r)) end
+			return r
+		end
+		function tab:AddSlider(...)
+			local ok, r = pcall(_AddSlider, self, ...)
+			if not ok then warn("Perided | AddSlider: " .. tostring(r)) end
+			return r
+		end
+		function tab:AddDropdown(...)
+			local ok, r = pcall(_AddDropdown, self, ...)
+			if not ok then warn("Perided | AddDropdown: " .. tostring(r)) end
+			return r
+		end
+		function tab:AddKeybind(...)
+			local ok, r = pcall(_AddKeybind, self, ...)
+			if not ok then warn("Perided | AddKeybind: " .. tostring(r)) end
+			return r
 		end
 
 		return tab
@@ -910,96 +906,8 @@ local function createGui(title, version)
 		return buildTab(name, icon)
 	end
 
-	local currentKeybind = Enum.KeyCode.RightShift
-	local listeningForKey = false
-
-	local function _AddKeybind(_, label, default, callback)
-		local state = default or Enum.KeyCode.RightShift
-		currentKeybind = state
-
-		local row = new("Frame", section, {
-			BorderSizePixel = 0,
-			BackgroundColor3 = COLORS.toggle,
-			Size = UDim2.new(1, 0, 0, 48),
-			Name = label,
-			BackgroundTransparency = 0.3,
-		})
-		corner(row)
-
-		new("TextLabel", row, {
-			TextWrapped = true, BorderSizePixel = 0, TextScaled = true,
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
-			TextColor3 = COLORS.text,
-			BackgroundTransparency = 1,
-			Size = UDim2.new(0.5, 0, 1, 0),
-			Position = UDim2.new(0.03, 0, 0, 0),
-			Text = label,
-			Name = "TitleText",
-			ZIndex = 2,
-			TextXAlignment = Enum.TextXAlignment.Left,
-		})
-
-		local keyBox = new("TextButton", row, {
-			BorderSizePixel = 0,
-			BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(0.97, 0, 0.5, 0),
-			Size = UDim2.new(0.4, 0, 0.6, 0),
-			Text = state.Name,
-			FontFace = Font.new("rbxasset://fonts/families/Inconsolata.json"),
-			TextColor3 = COLORS.text,
-			TextScaled = true,
-			Name = "KeyBox",
-			ZIndex = 3,
-		})
-		corner(keyBox, UDim.new(0, 4))
-		local kStroke = new("UIStroke", keyBox, { Thickness = 1.5, Color = Color3.fromRGB(80, 80, 80) })
-
-		local ti = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-		keyBox.MouseButton1Click:Connect(function()
-			if listeningForKey then return end
-			listeningForKey = true
-			keyBox.Text = "..."
-			TweenService:Create(kStroke, ti, { Color = Color3.fromRGB(255, 120, 19) }):Play()
-		end)
-
-		UIS.InputBegan:Connect(function(input, gpe)
-			if gpe then return end
-			if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-			if listeningForKey then
-				state = input.KeyCode
-				currentKeybind = state
-				listeningForKey = false
-				keyBox.Text = state.Name
-				TweenService:Create(kStroke, ti, { Color = Color3.fromRGB(80, 80, 80) }):Play()
-				if callback then callback(state) end
-			elseif input.KeyCode == currentKeybind then
-				main.Visible = not main.Visible
-			end
-		end)
-
-		return {
-			Get = function() return state end,
-			Set = function(v)
-				state = v
-				currentKeybind = v
-				keyBox.Text = v.Name
-			end,
-		}
-	end
-
 	local settingsTab = buildTab("Settings", 7059346373)
 	settingsTab:AddKeybind("Hide / Show", Enum.KeyCode.RightShift)
-
-	for name, t in pairs({AddKeybind = _AddKeybind}) do
-		settingsTab[name] = function(self, ...)
-			local ok, r = pcall(t, self, ...)
-			if not ok then warn("Perided | AddKeybind: " .. tostring(r)) end
-			return r
-		end
-	end
 
 	return gui
 end
