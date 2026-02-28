@@ -360,28 +360,6 @@ local function createGui(title, version)
 			btn.BackgroundTransparency = 0.85
 		end)
 
-		local iconImg = new("ImageLabel", sidebar, {
-			BorderSizePixel = 0,
-			BackgroundTransparency = 1,
-			Image = icon and ("rbxassetid://" .. tostring(icon)) or "rbxasset://textures/ui/GuiImagePlaceholder.png",
-			Name = name .. "TabIcon",
-			ZIndex = 10,
-			ScaleType = Enum.ScaleType.Fit,
-		})
-
-		local function updateIconPos()
-			local btnPos = btn.AbsolutePosition
-			local btnSize = btn.AbsoluteSize
-			local sidebarPos = sidebar.AbsolutePosition
-			local s = btnSize.Y * 0.6
-			iconImg.Size = UDim2.new(0, s, 0, s)
-			iconImg.Position = UDim2.new(0, btnPos.X - sidebarPos.X + 4, 0, btnPos.Y - sidebarPos.Y + (btnSize.Y - s) / 2)
-		end
-
-		btn:GetPropertyChangedSignal("AbsolutePosition"):Connect(updateIconPos)
-		btn:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateIconPos)
-		task.defer(updateIconPos)
-
 		local tab = {}
 
 		local function _AddToggle(_, label, default, callback)
