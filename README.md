@@ -9,7 +9,7 @@ Requires an executor with `gethui()` and `syn.protect_gui()` support (e.g. Synap
 ## Loading
 
 ```lua
-local Perided = loadstring(game:HttpGet("YOUR_RAW_URL_HERE"))()
+local Perided = loadstring(game:HttpGet("https://raw.githubusercontent.com/Goatofhells/Perciddd/refs/heads/main/testoetcid.txt"))()
 ```
 
 ## Creating a GUI
@@ -155,16 +155,10 @@ dropdown:Get() -- returns string
 
 ---
 
-## Settings Tab
-
-A built-in **Settings** tab is added automatically. It uses icon `rbxassetid://7059346373`. You do not need to create it manually.
-
----
-
 ## Example
 
 ```lua
-local Perided = loadstring(game:HttpGet("YOUR_RAW_URL_HERE"))()
+local Perided = loadstring(game:HttpGet("https://raw.githubusercontent.com/Goatofhells/Perciddd/refs/heads/main/testoetcid.txt"))()
 local gui = Perided("MyScript", "2.0")
 
 local main = gui:AddTab("Main", 123456789)
